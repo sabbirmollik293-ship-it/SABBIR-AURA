@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#050814">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SABBIR AURA">
+<meta name="description" content="SABBIR AURA — AI-Powered Smart Notification App">
+<title>SABBIR AURA</title>
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;SABBIR AURA&quot;,&quot;short_name&quot;:&quot;SABBIR AURA&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#050814&quot;,&quot;theme_color&quot;:&quot;#00d2ff&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' fill='%23050814'/%3E%3Ccircle cx='96' cy='96' r='60' fill='%2300d2ff' opacity='0.3'/%3E%3Ccircle cx='96' cy='96' r='30' fill='%2300d2ff'/%3E%3C/svg%3E&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}">
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --midnight:#050814;--deep:#080d1f;
+  --glass:rgba(8,15,40,0.65);
+  --b-blue:rgba(0,210,255,0.22);--b-purple:rgba(168,85,247,0.25);
+  --nb:#00d2ff;--np:#a855f7;--nc:#22d3ee;--npk:#f472b6;
+  --tp:#e2e8f0;--ts:#94a3b8;--td:#475569;
+  --ok:#10b981;--warn:#f59e0b;--err:#ef4444;
+}
+html,body{height:100%;overflow:hidden;background:var(--midnight);color:var(--tp);font-family:'Exo 2',sans-serif}
+
+/* ===== INTRO SPLASH ===== */
+#splash{
+  position:fixed;inset:0;background:var(--midnight);z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
+  transition:opacity 0.8s ease;
+}
+#splash.fade{opacity:0;pointer-events:none}
+
+.scene{width:320px;height:200px;position:relative;overflow:visible}
+
+/* Robot body */
+.robot{position:absolute;bottom:20px;left:60px;animation:robot-walk 0.5s steps(2) infinite}
+.robot-body{width:36px;height:44px;background:linear-gradient(180deg,#1e3a8a,#0f172a);border:2px solid var(--nb);border-radius:6px;position:relative;margin:0 auto}
+.robot-head{width:28px;height:22px;background:#0f172a;border:2px solid var(--nb);border-radius:5px;margin:0 auto -2px;position:relative}
+.robot-eye{width:6px;height:6px;background:var(--nb);border-radius:50%;position:absolute;top:6px;box-shadow:0 0 8px var(--nb);animation:blink 2s infinite}
+.robot-eye.l{left:5px}.robot-eye.r{right:5px}
+.robot-antenna{width:2px;height:10px;background:var(--nb);margin:0 auto;position:relative;top:-2px}
+.robot-antenna::after{content:'';width:5px;height:5px;background:var(--nb);border-radius:50%;position:absolute;top:-5px;left:-1.5px;box-shadow:0 0 8px var(--nb);animation:pulse-dot 1s infinite}
+.robot-arm-l,.robot-arm-r{width:8px;height:22px;background:#1e3a8a;border:1px solid rgba(0,210,255,0.4);border-radius:4px;position:absolute;top:6px}
+.robot-arm-l{left:-10px;transform-origin:top center;animation:arm-swing 0.5s steps(2) infinite}
+.robot-arm-r{right:-10px;transform-origin:top center;animation:arm-swing-r 0.5s steps(2) infinite}
+/* pointing arm override */
+.robot-arm-r.point{animation:none!important;transform:rotate(-60deg) translateY(-8px);background:linear-gradient(180deg,var(--nb),#1e3a8a)}
+.robot-legs{display:flex;gap:8px;justify-content:center;margin-top:2px}
+.robot-leg{width:10px;height:16px;background:#0f172a;border:1px solid rgba(0,210,255,0.3);border-radius:3px}
+.robot-leg.l{animation:leg-l 0.5s steps(2) infinite}.robot-leg.r{animation:leg-r 0.5s steps(2) infinite}
+
+/* Person body */
+.person{position:absolute;bottom:20px;left:0;animation:person-walk 0.5s steps(2) infinite}
+.person-body{width:28px;height:38px;position:relative;margin:0 auto}
+.person-head{width:22px;height:22px;background:#f59e0b;border-radius:50%;margin:0 auto -2px;border:2px solid #d97706}
+.person-torso{width:26px;height:20px;background:#1d4ed8;border-radius:4px;margin:0 auto}
+.person-arm-l,.person-arm-r{width:7px;height:18px;background:#1d4ed8;border-radius:3px;position:absolute;top:24px}
+.person-arm-l{left:0;animation:p-arm-l 0.5s steps(2) infinite}.person-arm-r{right:0;animation:p-arm-r 0.5s steps(2) infinite}
+.person-legs{display:flex;gap:6px;justify-content:center}
+.person-leg{width:9px;height:16px;background:#1e3a8a;border-radius:3px}
+.person-leg.l{animation:leg-l 0.5s steps(2) infinite}.person-leg.r{animation:leg-r 0.5s steps(2) infinite}
+
+/* Road / path */
+.road{position:absolute;bottom:10px;left:-40px;right:-40px;height:12px;background:rgba(0,210,255,0.06);border-top:1px dashed rgba(0,210,255,0.2)}
+.road::before{content:'';position:absolute;top:3px;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,transparent,transparent 10px,rgba(0,210,255,0.15) 10px,rgba(0,210,255,0.15) 20px)}
+
+/* Signal arrow from robot */
+.signal-arrow{
+  position:absolute;bottom:80px;left:110px;
+  animation:arrow-float 1s ease-in-out infinite;
+}
+.arrow-line{width:50px;height:2px;background:linear-gradient(90deg,var(--nb),transparent);position:relative}
+.arrow-line::after{content:'▶';position:absolute;right:-10px;top:-6px;color:var(--nb);font-size:12px;text-shadow:0 0 8px var(--nb)}
+.signal-text{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--nb);letter-spacing:1px;margin-top:4px;text-align:center;text-shadow:0 0 6px var(--nb)}
+
+/* Stars */
+.star{position:absolute;border-radius:50%;background:white;animation:twinkle var(--d,2s) var(--dl,0s) infinite}
+@keyframes twinkle{0%,100%{opacity:0.1}50%{opacity:0.8}}
+
+@keyframes robot-walk{0%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+@keyframes person-walk{0%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes blink{0%,90%,100%{opacity:1}95%{opacity:0}}
+@keyframes pulse-dot{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+@keyframes arm-swing{0%{transform:rotate(20deg)}50%{transform:rotate(-20deg)}}
+@keyframes arm-swing-r{0%{transform:rotate(-20deg)}50%{transform:rotate(20deg)}}
+@keyframes p-arm-l{0%{transform:rotate(25deg)}50%{transform:rotate(-25deg)}}
+@keyframes p-arm-r{0%{transform:rotate(-25deg)}50%{transform:rotate(25deg)}}
+@keyframes leg-l{0%{transform:rotate(20deg)}50%{transform:rotate(-20deg)}}
+@keyframes leg-r{0%{transform:rotate(-20deg)}50%{transform:rotate(20deg)}}
+@keyframes arrow-float{0%,100%{transform:translateX(0)}50%{transform:translateX(8px)}}
+
+.splash-logo{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;letter-spacing:4px;background:linear-gradient(135deg,var(--nb),var(--np));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-top:20px}
+.splash-sub{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ts);letter-spacing:3px;margin-top:6px}
+.splash-bar{width:200px;height:2px;background:rgba(0,210,255,0.1);border-radius:2px;margin-top:24px;overflow:hidden}
+.splash-bar-fill{height:100%;background:linear-gradient(90deg,var(--nb),var(--np));border-radius:2px;animation:bar-fill 2.8s ease forwards}
+@keyframes bar-fill{from{width:0}to{width:100%}}
+
+/* ===== MAIN APP ===== */
+#app{height:100%;display:flex;flex-direction:column;opacity:0;transition:opacity 0.6s ease}
+#app.show{opacity:1}
+
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(0,210,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,210,255,0.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+.bg-o1{position:fixed;top:-180px;right:-80px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,0.1) 0%,transparent 70%);pointer-events:none;z-index:0}
+.bg-o2{position:fixed;bottom:-130px;left:-80px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(0,210,255,0.08) 0%,transparent 70%);pointer-events:none;z-index:0}
+
+.screens{flex:1;position:relative;overflow:hidden;z-index:1}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:18px 16px 110px;display:none;flex-direction:column;-webkit-overflow-scrolling:touch}
+.screen.active{display:flex}
+.screen::-webkit-scrollbar{width:3px}.screen::-webkit-scrollbar-track{background:transparent}.screen::-webkit-scrollbar-thumb{background:rgba(0,210,255,0.2);border-radius:2px}
+
+.hdr{display:flex;align-items:center;justify-content:space-between;padding-bottom:20px}
+.logo{font-family:'Rajdhani',sans-serif;font-size:24px;font-weight:700;background:linear-gradient(135deg,var(--nb),var(--np));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px}
+.hdr-badge{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--nc);border:1px solid rgba(34,211,238,0.3);padding:3px 9px;border-radius:20px;letter-spacing:1px}
+
+/* Orb */
+.orb-wrap{display:flex;flex-direction:column;align-items:center;padding:16px 0 18px;gap:12px}
+.orb{width:100px;height:100px;border-radius:50%;position:relative;cursor:pointer}
+.orb-core{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 35%,#7dd3fc,#3b82f6 40%,#1e3a8a 70%,#0f172a);box-shadow:0 0 35px rgba(0,210,255,0.4),0 0 70px rgba(168,85,247,0.18);animation:breathe 3s ease-in-out infinite}
+.orb-r1,.orb-r2{position:absolute;border-radius:50%;border:1px solid}
+.orb-r1{inset:-8px;border-color:rgba(0,210,255,0.25);animation:spin1 8s linear infinite}
+.orb-r2{inset:-16px;border-color:rgba(168,85,247,0.18);animation:spin1 13s linear infinite reverse}
+.orb-r1::before,.orb-r2::before{content:'';position:absolute;width:7px;height:7px;border-radius:50%}
+.orb-r1::before{top:50%;left:-4px;transform:translateY(-50%);background:var(--nb);box-shadow:0 0 10px var(--nb)}
+.orb-r2::before{top:-4px;left:50%;transform:translateX(-50%);background:var(--np);box-shadow:0 0 10px var(--np)}
+@keyframes breathe{0%,100%{box-shadow:0 0 35px rgba(0,210,255,0.4),0 0 70px rgba(168,85,247,0.18)}50%{box-shadow:0 0 55px rgba(0,210,255,0.6),0 0 110px rgba(168,85,247,0.3)}}
+@keyframes spin1{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.orb.proc .orb-core{animation:proc-pulse 0.4s ease-in-out infinite}
+@keyframes proc-pulse{0%,100%{box-shadow:0 0 40px rgba(0,210,255,0.5)}50%{box-shadow:0 0 90px rgba(0,210,255,1),0 0 50px rgba(168,85,247,0.7)}}
+.orb-lbl{font-size:10px;color:var(--ts);letter-spacing:2px;text-transform:uppercase;font-family:'JetBrains Mono',monospace}
+.orb-st{font-size:10px;color:var(--nc);letter-spacing:1px;font-family:'JetBrains Mono',monospace}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px}
+.stat{padding:12px 8px;background:rgba(8,15,40,0.7);border:1px solid rgba(255,255,255,0.05);border-radius:12px;text-align:center}
+.sn{font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700}
+.sn.b{color:var(--nb)}.sn.p{color:var(--np)}.sn.g{color:#34d399}
+.sl{font-size:9px;color:var(--td);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+
+/* Notif cards */
+.sec-t{font-family:'Rajdhani',sans-serif;font-size:11px;font-weight:500;color:var(--ts);letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;padding-left:2px}
+.nlist{display:flex;flex-direction:column;gap:8px}
+.ncard{padding:14px 16px;background:rgba(8,15,40,0.75);border:1px solid var(--b-blue);border-radius:14px;display:flex;gap:12px;align-items:flex-start;position:relative;overflow:hidden;transition:all 0.25s;cursor:default}
+.ncard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--nb),var(--np))}
+.nico{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.nico.b{background:rgba(0,210,255,0.1);border:1px solid rgba(0,210,255,0.18)}
+.nico.p{background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.18)}
+.nico.c{background:rgba(34,211,238,0.1);border:1px solid rgba(34,211,238,0.18)}
+.nico.pk{background:rgba(244,114,182,0.1);border:1px solid rgba(244,114,182,0.18)}
+.ncon{flex:1;min-width:0}
+.ntit{font-weight:600;font-size:13px;color:var(--tp);margin-bottom:3px}
+.nmsg{font-size:11px;color:var(--ts);line-height:1.5;margin-bottom:7px}
+.nmeta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ntm{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--nc);background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.18);padding:2px 7px;border-radius:20px}
+.nbadge{font-size:9px;padding:2px 7px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+.bai{background:rgba(168,85,247,0.12);color:var(--np);border:1px solid rgba(168,85,247,0.22)}
+.bpend{background:rgba(245,158,11,0.1);color:#fbbf24;border:1px solid rgba(245,158,11,0.18)}
+.bfired{background:rgba(16,185,129,0.1);color:#34d399;border:1px solid rgba(16,185,129,0.18)}
+.ndel{width:26px;height:26px;border-radius:7px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.12);color:rgba(239,68,68,0.45);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.2s}
+.ndel:hover,.ndel:active{background:rgba(239,68,68,0.2);color:var(--err)}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:40px 20px;text-align:center}
+.empty-ic{font-size:36px;opacity:0.25}
+.empty-t{font-family:'Rajdhani',sans-serif;font-size:15px;color:var(--ts);letter-spacing:1px}
+.empty-s{font-size:11px;color:var(--td);max-width:200px;line-height:1.6}
+
+/* Create screen */
+.clabel{font-size:10px;color:var(--ts);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.gi{width:100%;padding:13px 16px;background:rgba(0,210,255,0.03);border:1px solid var(--b-blue);border-radius:12px;color:var(--tp);font-family:'Exo 2',sans-serif;font-size:14px;outline:none;transition:all 0.3s;-webkit-appearance:none;appearance:none}
+.gi:focus{border-color:rgba(0,210,255,0.55);background:rgba(0,210,255,0.06);box-shadow:0 0 18px rgba(0,210,255,0.08)}
+.gi::placeholder{color:var(--td)}
+textarea.gi{resize:none;line-height:1.6}
+input[type=date].gi,input[type=time].gi{color-scheme:dark}
+.trow{display:flex;gap:8px}
+.trow .gi{flex:1}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{padding:7px 12px;border-radius:20px;font-size:11px;cursor:pointer;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);color:var(--ts);transition:all 0.2s;user-select:none}
+.chip.on{background:rgba(0,210,255,0.1);border-color:rgba(0,210,255,0.28);color:var(--nb)}
+.ai-info{padding:14px 16px;background:rgba(8,15,40,0.7);border:1px solid var(--b-purple);border-radius:14px;margin-bottom:14px}
+.ai-info-t{font-size:10px;color:var(--np);letter-spacing:2px;margin-bottom:6px}
+.ai-info-d{font-size:11px;color:var(--ts);line-height:1.6}
+.api-st{display:flex;align-items:center;gap:6px;margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px}
+.dot-st{width:5px;height:5px;border-radius:50%}
+.mbtn{width:100%;padding:15px;background:linear-gradient(135deg,rgba(0,210,255,0.18),rgba(168,85,247,0.18));border:1px solid var(--b-blue);border-radius:14px;color:var(--nb);font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:8px}
+.mbtn:hover{background:linear-gradient(135deg,rgba(0,210,255,0.3),rgba(168,85,247,0.3));box-shadow:0 0 28px rgba(0,210,255,0.15)}
+.mbtn:active{transform:scale(0.98)}
+.mbtn:disabled{opacity:0.45;cursor:not-allowed;transform:none}
+.csec{margin-bottom:16px}
+
+/* Settings */
+.scard{padding:18px;background:rgba(8,15,40,0.7);border:1px solid var(--b-blue);border-radius:16px;margin-bottom:10px}
+.shdr{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.sico{width:34px;height:34px;border-radius:10px;background:rgba(0,210,255,0.08);border:1px solid rgba(0,210,255,0.18);display:flex;align-items:center;justify-content:center;font-size:15px}
+.stit{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:600;letter-spacing:1px}
+.sdesc{font-size:11px;color:var(--ts);margin-bottom:12px;line-height:1.6}
+.api-row{display:flex;gap:8px}
+.api-row .gi{flex:1;font-family:'JetBrains Mono',monospace;font-size:11px}
+.sbtn{padding:12px 16px;background:linear-gradient(135deg,rgba(0,210,255,0.18),rgba(168,85,247,0.18));border:1px solid var(--b-blue);border-radius:12px;color:var(--nb);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all 0.3s;white-space:nowrap}
+.sbtn:hover{background:rgba(0,210,255,0.28)}
+.saved{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ok);display:flex;align-items:center;gap:5px;padding:7px 10px;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);border-radius:9px;margin-top:10px;opacity:0;transition:opacity 0.3s}
+.saved.show{opacity:1}
+.tgl-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.tgl-row:last-child{border:none}
+.tgl-l{font-size:12px;color:var(--tp)}.tgl-s{font-size:10px;color:var(--td);margin-top:2px}
+.tgl{width:42px;height:22px;border-radius:11px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.08);cursor:pointer;position:relative;transition:all 0.3s;flex-shrink:0}
+.tgl.on{background:rgba(0,210,255,0.25);border-color:rgba(0,210,255,0.35)}
+.tgl::after{content:'';position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.35);transition:all 0.3s}
+.tgl.on::after{left:22px;background:var(--nb);box-shadow:0 0 7px var(--nb)}
+.arow{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+.arow:last-child{border:none}
+.ak{font-size:11px;color:var(--ts)}.av{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--nc)}
+
+/* Permission banner */
+.perm-banner{padding:14px 16px;background:rgba(245,158,11,0.07);border:1px solid rgba(245,158,11,0.22);border-radius:14px;margin-bottom:16px;display:none}
+.perm-banner.show{display:block}
+.perm-t{font-size:12px;color:#fbbf24;margin-bottom:8px;font-weight:600}
+.perm-d{font-size:11px;color:var(--ts);margin-bottom:10px;line-height:1.5}
+.perm-btn{padding:9px 16px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.3);border-radius:10px;color:#fbbf24;font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all 0.2s}
+.perm-btn:hover{background:rgba(245,158,11,0.25)}
+.perm-ok{padding:14px 16px;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.22);border-radius:14px;margin-bottom:16px;display:none;align-items:center;gap:10px}
+.perm-ok.show{display:flex}
+.perm-ok-ic{font-size:20px}
+.perm-ok-t{font-size:13px;color:#34d399;font-weight:600}
+.perm-ok-s{font-size:11px;color:var(--ts);margin-top:2px}
+
+/* AI Modal */
+.aimod{position:fixed;inset:0;background:rgba(5,8,20,0.88);backdrop-filter:blur(10px);z-index:500;display:none;align-items:center;justify-content:center}
+.aimod.show{display:flex}
+.aimod-c{background:rgba(8,15,40,0.97);border:1px solid rgba(0,210,255,0.28);border-radius:22px;padding:28px 32px;max-width:310px;width:90%;text-align:center;box-shadow:0 0 60px rgba(0,210,255,0.18)}
+.aimod-orb{width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,#7dd3fc,#3b82f6 50%,#1e3a8a);margin:0 auto 16px;animation:proc-pulse 0.5s ease-in-out infinite;box-shadow:0 0 28px rgba(0,210,255,0.5)}
+.aimod-t{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:600;color:var(--nb);letter-spacing:2px;margin-bottom:6px}
+.aimod-m{font-size:11px;color:var(--ts);font-family:'JetBrains Mono',monospace}
+.dots{display:flex;gap:5px;justify-content:center;margin-top:14px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--nb)}
+.dot:nth-child(1){animation:db 1s 0s infinite}.dot:nth-child(2){animation:db 1s 0.2s infinite}.dot:nth-child(3){animation:db 1s 0.4s infinite}
+@keyframes db{0%,100%{transform:translateY(0);opacity:0.3}50%{transform:translateY(-5px);opacity:1}}
+
+/* Toast */
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-70px);background:rgba(8,15,40,0.97);border:1px solid rgba(0,210,255,0.28);border-radius:12px;padding:11px 18px;z-index:600;font-size:12px;color:var(--nc);font-family:'JetBrains Mono',monospace;box-shadow:0 8px 32px rgba(0,0,0,0.4);transition:transform 0.38s cubic-bezier(0.34,1.56,0.64,1);white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* Dock */
+.dock{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:4px;background:rgba(8,15,40,0.88);backdrop-filter:blur(30px);border:1px solid rgba(0,210,255,0.12);border-radius:28px;padding:7px 9px;box-shadow:0 16px 50px rgba(0,0,0,0.5);z-index:100}
+.dbtn{width:54px;height:50px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;border:none;background:transparent;color:var(--td);transition:all 0.25s;font-size:19px}
+.dbtn .dl{font-family:'JetBrains Mono',monospace;font-size:7px;letter-spacing:0.5px}
+.dbtn:hover{color:var(--nb);background:rgba(0,210,255,0.07)}
+.dbtn.on{color:var(--nb);background:rgba(0,210,255,0.1);border:1px solid rgba(0,210,255,0.22);box-shadow:0 0 18px rgba(0,210,255,0.12)}
+.dbtn.on .dl{color:var(--nb)}
+
+/* PWA Install */
+.install-banner{padding:12px 16px;background:rgba(0,210,255,0.05);border:1px solid var(--b-blue);border-radius:14px;margin-bottom:14px;display:none;align-items:center;gap:12px}
+.install-banner.show{display:flex}
+.install-t{flex:1;font-size:11px;color:var(--ts);line-height:1.5}
+.install-t strong{color:var(--tp);display:block;margin-bottom:2px;font-size:12px}
+.ibtn{padding:8px 14px;background:rgba(0,210,255,0.15);border:1px solid var(--b-blue);border-radius:10px;color:var(--nb);font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="scene" id="scene">
+    <!-- Stars -->
+    <div class="star" style="width:2px;height:2px;top:10px;left:30px;--d:1.5s;--dl:0.3s"></div>
+    <div class="star" style="width:1px;height:1px;top:25px;left:90px;--d:2s;--dl:0.8s"></div>
+    <div class="star" style="width:2px;height:2px;top:5px;left:170px;--d:1.8s;--dl:0.1s"></div>
+    <div class="star" style="width:1px;height:1px;top:40px;left:260px;--d:2.2s;--dl:0.6s"></div>
+    <div class="star" style="width:2px;height:2px;top:15px;left:220px;--d:1.6s;--dl:0.4s"></div>
+    <div class="star" style="width:1px;height:1px;top:55px;left:140px;--d:2.4s;--dl:0.9s"></div>
+    <div class="road"></div>
+    <!-- Robot leads the way -->
+    <div class="robot" style="left:130px">
+      <div class="robot-antenna"></div>
+      <div class="robot-head"><div class="robot-eye l"></div><div class="robot-eye r"></div></div>
+      <div class="robot-body">
+        <div class="robot-arm-l"></div>
+        <div class="robot-arm-r point"></div>
+      </div>
+      <div class="robot-legs"><div class="robot-leg l"></div><div class="robot-leg r"></div></div>
+    </div>
+    <!-- Signal from robot pointing forward -->
+    <div class="signal-arrow" style="left:168px;bottom:68px">
+      <div class="arrow-line"></div>
+      <div class="signal-text">THIS WAY!</div>
+    </div>
+    <!-- Person follows -->
+    <div class="person" style="left:60px">
+      <div class="person-body">
+        <div class="person-head"></div>
+        <div class="person-torso"></div>
+        <div class="person-arm-l"></div>
+        <div class="person-arm-r"></div>
+      </div>
+      <div class="person-legs"><div class="person-leg l"></div><div class="person-leg r"></div></div>
+    </div>
+  </div>
+  <div class="splash-logo">SABBIR AURA</div>
+  <div class="splash-sub">AI NOTIFICATION ENGINE</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="bg-grid"></div><div class="bg-o1"></div><div class="bg-o2"></div>
+
+  <div class="screens">
+
+    <!-- HOME -->
+    <div class="screen active" id="s-home">
+      <div class="hdr">
+        <div><div class="logo">SABBIR AURA</div><div style="font-size:9px;color:var(--td);letter-spacing:1px;margin-top:1px">SMART NOTIFICATION ENGINE</div></div>
+        <div class="hdr-badge" id="onlineBadge">● ONLINE</div>
+      </div>
+
+      <!-- Permission banners -->
+      <div class="perm-banner" id="permBanner">
+        <div class="perm-t">🔔 Notification Permission Required</div>
+        <div class="perm-d">Real notifications পাঠাতে browser permission দিন। একবার দিলে সবসময় কাজ করবে।</div>
+        <button class="perm-btn" onclick="requestPermission()">✦ Permission দিন</button>
+      </div>
+      <div class="perm-ok" id="permOk">
+        <div class="perm-ok-ic">✅</div>
+        <div><div class="perm-ok-t">Permission Granted!</div><div class="perm-ok-s">Real notifications সক্রিয় হয়েছে</div></div>
+      </div>
+
+      <div class="orb-wrap">
+        <div class="orb" id="mainOrb" onclick="orbClick()">
+          <div class="orb-core"></div>
+          <div class="orb-r1"></div><div class="orb-r2"></div>
+        </div>
+        <div class="orb-lbl">AI CORE</div>
+        <div class="orb-st" id="orbSt">● IDLE — READY</div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="sn b" id="st1">0</div><div class="sl">Scheduled</div></div>
+        <div class="stat"><div class="sn p" id="st2">0</div><div class="sl">AI Enhanced</div></div>
+        <div class="stat"><div class="sn g" id="st3">0</div><div class="sl">Delivered</div></div>
+      </div>
+
+      <div class="sec-t">NOTIFICATIONS</div>
+      <div class="nlist" id="nlist"></div>
+      <div class="empty" id="nempty">
+        <div class="empty-ic">🔔</div>
+        <div class="empty-t">কোনো নোটিফিকেশন নেই</div>
+        <div class="empty-s">Create ট্যাব থেকে আপনার প্রথম AI reminder তৈরি করুন</div>
+      </div>
+    </div>
+
+    <!-- CREATE -->
+    <div class="screen" id="s-create">
+      <div class="hdr"><div class="logo" style="font-size:20px">CREATE <span style="font-weight:300">REMINDER</span></div></div>
+
+      <div class="perm-banner" id="permBanner2">
+        <div class="perm-t">🔔 Notification Permission Required</div>
+        <div class="perm-d">নোটিফিকেশন পাঠাতে প্রথমে permission দিন।</div>
+        <button class="perm-btn" onclick="requestPermission()">✦ Permission দিন</button>
+      </div>
+
+      <div class="csec">
+        <div class="clabel">কি বিষয়ে মনে করিয়ে দেব?</div>
+        <textarea class="gi" id="rtxt" rows="3" placeholder="যেমন: পানি পান করতে মনে করিয়ে দাও, ওষুধ খেতে মনে করাও..."></textarea>
+      </div>
+      <div class="csec">
+        <div class="clabel">সময় নির্ধারণ</div>
+        <div class="trow">
+          <input type="date" class="gi" id="rdate">
+          <input type="time" class="gi" id="rtime">
+        </div>
+      </div>
+      <div class="csec">
+        <div class="clabel">Notification Style</div>
+        <div class="chips">
+          <div class="chip on" data-s="witty" onclick="pickStyle(this)">🎭 Witty</div>
+          <div class="chip" data-s="motivational" onclick="pickStyle(this)">💪 Motivational</div>
+          <div class="chip" data-s="technical" onclick="pickStyle(this)">🤖 Technical</div>
+          <div class="chip" data-s="friendly" onclick="pickStyle(this)">😊 Friendly</div>
+        </div>
+      </div>
+      <div class="ai-info">
+        <div class="ai-info-t">✦ GEMINI AI ENHANCEMENT</div>
+        <div class="ai-info-d">আপনার reminder টি Gemini AI দিয়ে স্মার্ট ও মজাদার notification message-এ রূপান্তরিত হবে। Settings-এ API key যোগ করুন।</div>
+        <div class="api-st">
+          <div class="dot-st" id="apiDot" style="background:var(--td)"></div>
+          <span id="apiSt" style="color:var(--td)">API key নেই</span>
+        </div>
+      </div>
+      <button class="mbtn" id="createBtn" onclick="createReminder()">⚡ GENERATE &amp; SCHEDULE</button>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="s-settings">
+      <div class="hdr"><div class="logo" style="font-size:20px">SETTINGS</div></div>
+
+      <!-- Install PWA -->
+      <div class="install-banner" id="installBanner">
+        <div class="install-t"><strong>📱 মোবাইলে Install করুন</strong>নিচের বাটনে চাপ দিয়ে অ্যাপটি মোবাইলে ইনস্টল করুন</div>
+        <button class="ibtn" id="installBtn" onclick="installPWA()">Install ↓</button>
+      </div>
+
+      <div class="scard">
+        <div class="shdr"><div class="sico">🔑</div><div class="stit">GEMINI API KEY</div></div>
+        <div class="sdesc">আপনার Gemini API key শুধুমাত্র আপনার ডিভাইসে সংরক্ষিত হয়। কোনো সার্ভারে পাঠানো হয় না।</div>
+        <div class="api-row">
+          <input type="password" class="gi" id="apiIn" placeholder="AIzaSy... (আপনার Gemini API key)">
+          <button class="sbtn" onclick="saveKey()">SAVE</button>
+        </div>
+        <div class="saved" id="savedInd">✓ API KEY সুরক্ষিতভাবে সেভ হয়েছে</div>
+      </div>
+
+      <div class="sec-t">NOTIFICATION SETTINGS</div>
+      <div class="scard">
+        <div class="tgl-row"><div><div class="tgl-l">Real Notifications</div><div class="tgl-s">Browser notification popup সক্রিয়</div></div><div class="tgl on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tgl-row"><div><div class="tgl-l">AI Enhancement</div><div class="tgl-s">Gemini দিয়ে message তৈরি</div></div><div class="tgl on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tgl-row"><div><div class="tgl-l">Sound Alert</div><div class="tgl-s">Notification-এ sound বাজবে</div></div><div class="tgl on" onclick="this.classList.toggle('on')"></div></div>
+        <div class="tgl-row"><div><div class="tgl-l">Repeat Reminder</div><div class="tgl-s">দেরি হলে আবার মনে করিয়ে দাও</div></div><div class="tgl" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+
+      <div class="sec-t">ABOUT</div>
+      <div class="scard">
+        <div class="arow"><span class="ak">App</span><span class="av">SABBIR AURA v1.0</span></div>
+        <div class="arow"><span class="ak">AI Engine</span><span class="av">Gemini 2.0 Flash</span></div>
+        <div class="arow"><span class="ak">Notifications</span><span class="av">Web Push API</span></div>
+        <div class="arow"><span class="ak">Storage</span><span class="av">LocalStorage (Secure)</span></div>
+        <div class="arow"><span class="ak">Build</span><span class="av">2025-SABBIR</span></div>
+      </div>
+    </div>
+
+  </div><!-- end screens -->
+
+  <!-- DOCK -->
+  <div class="dock">
+    <button class="dbtn on" id="d-home" onclick="nav('home')"><span>⬡</span><span class="dl">HOME</span></button>
+    <button class="dbtn" id="d-create" onclick="nav('create')"><span>✦</span><span class="dl">CREATE</span></button>
+    <button class="dbtn" id="d-settings" onclick="nav('settings')"><span>⚙</span><span class="dl">CONFIG</span></button>
+  </div>
+</div><!-- end app -->
+
+<!-- AI Modal -->
+<div class="aimod" id="aiMod">
+  <div class="aimod-c">
+    <div class="aimod-orb"></div>
+    <div class="aimod-t">AURA PROCESSING</div>
+    <div class="aimod-m" id="aiModMsg">AI বিশ্লেষণ করছে...</div>
+    <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ===== SPLASH =====
+window.addEventListener('load',()=>{
+  setTimeout(()=>{
+    document.getElementById('splash').classList.add('fade');
+    setTimeout(()=>{
+      document.getElementById('splash').style.display='none';
+      document.getElementById('app').classList.add('show');
+      checkPermission();
+      checkApiKey();
+      renderNotifs();
+      setupPWA();
+    },800);
+  },3000);
+});
+
+// ===== STATE =====
+let notifs=JSON.parse(localStorage.getItem('sa_notifs')||'[]');
+let apiKey=localStorage.getItem('sa_apikey')||'';
+let selStyle='witty';
+let deferredPrompt=null;
+let timers={};
+
+function save(){localStorage.setItem('sa_notifs',JSON.stringify(notifs))}
+
+// ===== PERMISSION =====
+function checkPermission(){
+  if(!('Notification' in window))return;
+  if(Notification.permission==='granted'){showPermOk()}
+  else if(Notification.permission==='default'){showPermBanner()}
+}
+
+function showPermBanner(){
+  document.getElementById('permBanner').classList.add('show');
+  document.getElementById('permBanner2') && document.getElementById('permBanner2').classList.add('show');
+}
+function showPermOk(){
+  document.getElementById('permOk').classList.add('show');
+  document.getElementById('permBanner').classList.remove('show');
+  document.getElementById('permBanner2') && document.getElementById('permBanner2').classList.remove('show');
+}
+
+async function requestPermission(){
+  if(!('Notification' in window)){toast('⚠ এই browser notification support করে না');return}
+  const p=await Notification.requestPermission();
+  if(p==='granted'){
+    showPermOk();
+    toast('✅ Permission দেওয়া হয়েছে! Notifications সক্রিয়।');
+    // test notification
+    setTimeout(()=>{
+      sendNotif('SABBIR AURA সক্রিয়!','✅ Notification permission পাওয়া গেছে। আপনি এখন real notifications পাবেন!',null);
+    },500);
+  } else {
+    toast('❌ Permission দেওয়া হয়নি। Browser settings থেকে দিন।');
+  }
+}
+
+// ===== SEND REAL NOTIFICATION =====
+function sendNotif(title,body,id){
+  if(!('Notification' in window))return;
+  if(Notification.permission!=='granted'){toast('⚠ Notification permission নেই!');return}
+  try{
+    const n=new Notification(title,{
+      body,
+      icon:'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="16" fill="%23050814"/%3E%3Ccircle cx="32" cy="32" r="20" fill="%2300d2ff" opacity="0.3"/%3E%3Ccircle cx="32" cy="32" r="10" fill="%2300d2ff"/%3E%3C/svg%3E',
+      badge:'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="16" fill="%23050814"/%3E%3Ccircle cx="32" cy="32" r="10" fill="%2300d2ff"/%3E%3C/svg%3E',
+      tag:'sabbir-aura-'+(id||Date.now()),
+      requireInteraction:false
+    });
+    n.onclick=()=>{window.focus();n.close()};
+    if(id){
+      const idx=notifs.findIndex(x=>x.id===id);
+      if(idx>=0){notifs[idx].status='fired';save();renderNotifs()}
+    }
+  }catch(e){toast('Notification error: '+e.message)}
+}
+
+// ===== SCHEDULE =====
+function scheduleNotif(n){
+  const now=Date.now();
+  const target=new Date(n.date+'T'+n.time).getTime();
+  const diff=target-now;
+  if(diff<=0){
+    // already past — fire immediately if within 1 min
+    if(diff>-60000) sendNotif(n.title,n.msg,n.id);
+    return;
+  }
+  // clear old timer
+  if(timers[n.id]) clearTimeout(timers[n.id]);
+  timers[n.id]=setTimeout(()=>{
+    sendNotif(n.title,n.msg,n.id);
+  },Math.min(diff,2147483647)); // max setTimeout ~24.8 days
+}
+
+function scheduleAll(){notifs.filter(n=>n.status==='pending').forEach(scheduleNotif)}
+
+// ===== API KEY =====
+function checkApiKey(){
+  if(apiKey){
+    document.getElementById('apiDot').style.background='var(--ok)';
+    document.getElementById('apiSt').style.color='var(--ok)';
+    document.getElementById('apiSt').textContent='API key সক্রিয় ✓';
+    if(document.getElementById('apiIn').value==='')
+      document.getElementById('apiIn').value='•'.repeat(18);
+  }
+}
+
+function saveKey(){
+  const v=document.getElementById('apiIn').value.trim();
+  if(!v||v.startsWith('•')){toast('⚠ সঠিক API key দিন');return}
+  apiKey=v;
+  localStorage.setItem('sa_apikey',v);
+  document.getElementById('apiIn').value='•'.repeat(18);
+  const ind=document.getElementById('savedInd');
+  ind.classList.add('show');
+  setTimeout(()=>ind.classList.remove('show'),3000);
+  checkApiKey();
+  toast('🔑 API key সুরক্ষিতভাবে সেভ হয়েছে');
+}
+
+// ===== AI MESSAGE =====
+const tpls={
+  witty:{
+    water:["আপনার কোষগুলো পানির জন্য হাহাকার করছে। H₂O সংকট সমাধান করুন এখনই!","Hydration protocol চালু! আপনার biological system-এ পানির ঘাটতি শনাক্ত। পান করুন!","Alert: পানি পানের সময়! আপনার শরীর ৬০% পানি — কিন্তু glass-টা ০%। সমাধান করুন।"],
+    sleep:["ঘুমের সময়! আপনার brain-কে reboot করতে দিন। চোখ বন্ধ করুন।","Sleep mode চালু করুন। আপনার biological RAM ভর্তি — defrag দরকার। শুভ রাত্রি!","Alert: ঘুম ছাড়া মানুষ zombie-র মতো। Zombie হবেন না — ঘুমান!"],
+    exercise:["আপনার sneaker-রা আপনার দিকে হতাশ চোখে তাকিয়ে। Exercise করুন!","Calorie combustion sequence চালু! ভবিষ্যতের আপনি এখনকার আপনাকে ধন্যবাদ দেবে।","Physics বলে: rest-এ থাকা জিনিস rest-এই থাকে। Physics কে ভুল প্রমাণ করুন!"],
+    default:["AI reminder materialized! আপনার past self অপেক্ষা করছেন — হতাশ করবেন না।","Quantum reminder: আপনি এটা scheduled করেছিলেন কারণ। Follow through করুন!","The algorithm has spoken. যা ভুলতে চেয়েছিলেন — মনে করুন এখনই।"]
+  },
+  motivational:{default:["আপনি এটা পারবেন! নিজেকে বিশ্বাস করুন এবং এগিয়ে যান। 💪","Champions সেটাই করে যা plan করেছিল। এটাই সেই মুহূর্ত!","প্রতিটি ছোট পদক্ষেপ আপনাকে সেই মানুষটার কাছে নিয়ে যাচ্ছে যে হতে চান।"]},
+  technical:{default:["[ALERT] Scheduled task triggered. Priority: HIGH. Action required.","sys::reminder → event_fired. User acknowledgment pending.","TASK EXECUTION: status=PENDING. User action required immediately."]},
+  friendly:{default:["হ্যালো! আপনার past self আপনাকে মনে করিয়ে দিচ্ছে। 😊 আপনি পারবেন!","একটা ছোট্ট reminder — আপনিই best! এটা করে ফেলুন। 🌟","আপনার জন্য একটা friendly nudge! আজকেও দারুণ হোক।"]}
+};
+
+function getMsg(txt,style){
+  const l=txt.toLowerCase();
+  let pool;
+  if(style==='witty'){
+    if(l.includes('পানি')||l.includes('water')||l.includes('drink')||l.includes('hydrat'))pool=tpls.witty.water;
+    else if(l.includes('ঘুম')||l.includes('sleep')||l.includes('bed'))pool=tpls.witty.sleep;
+    else if(l.includes('exercise')||l.includes('gym')||l.includes('run')||l.includes('ব্যায়াম'))pool=tpls.witty.exercise;
+    else pool=tpls.witty.default;
+  } else pool=tpls[style]?.default||tpls.witty.default;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function getTitle(txt){
+  const l=txt.toLowerCase();
+  if(l.includes('পানি')||l.includes('water')||l.includes('drink'))return'💧 Hydration Alert';
+  if(l.includes('meeting')||l.includes('call')||l.includes('মিটিং'))return'📋 Meeting Reminder';
+  if(l.includes('exercise')||l.includes('gym')||l.includes('ব্যায়াম')||l.includes('run'))return'🏃 Fitness Reminder';
+  if(l.includes('ঘুম')||l.includes('sleep'))return'🌙 Sleep Protocol';
+  if(l.includes('ওষুধ')||l.includes('medicine')||l.includes('medication'))return'💊 Medication Alert';
+  if(l.includes('খাওয়া')||l.includes('eat')||l.includes('food')||l.includes('lunch'))return'🍽️ Nutrition Reminder';
+  if(l.includes('মা')||l.includes('বাবা')||l.includes('mom')||l.includes('dad'))return'📞 Family Reminder';
+  return'🔔 '+txt.slice(0,30);
+}
+
+function getIcon(txt){
+  const l=txt.toLowerCase();
+  if(l.includes('পানি')||l.includes('water'))return{ic:'💧',cl:'b'};
+  if(l.includes('meeting')||l.includes('মিটিং'))return{ic:'📋',cl:'p'};
+  if(l.includes('exercise')||l.includes('gym'))return{ic:'🏃',cl:'c'};
+  if(l.includes('ঘুম')||l.includes('sleep'))return{ic:'🌙',cl:'p'};
+  if(l.includes('ওষুধ')||l.includes('medicine'))return{ic:'💊',cl:'pk'};
+  return{ic:'🔔',cl:'b'};
+}
+
+// ===== CREATE =====
+async function createReminder(){
+  const txt=document.getElementById('rtxt').value.trim();
+  const date=document.getElementById('rdate').value;
+  const time=document.getElementById('rtime').value;
+  if(!txt){toast('⚠ Reminder বিষয় লিখুন');return}
+  if(!date||!time){toast('⚠ তারিখ ও সময় দিন');return}
+  if(Notification.permission!=='granted'){toast('⚠ আগে notification permission দিন!');return}
+
+  // Check time not in past
+  const tgt=new Date(date+'T'+time).getTime();
+  if(tgt<Date.now()-60000){toast('⚠ অতীতের সময় দেওয়া যাবে না');return}
+
+  const btn=document.getElementById('createBtn');
+  btn.disabled=true;
+  document.getElementById('aiMod').classList.add('show');
+  document.getElementById('mainOrb').classList.add('proc');
+  document.getElementById('orbSt').textContent='● GEMINI PROCESSING...';
+
+  const msgs=['AI বিশ্লেষণ করছে...','Gemini neural network চালু...','Smart message তৈরি হচ্ছে...','Notification schedule হচ্ছে...'];
+  let mi=0;
+  const msgEl=document.getElementById('aiModMsg');
+  const tick=setInterval(()=>{mi=(mi+1)%msgs.length;msgEl.textContent=msgs[mi]},700);
+
+  let aiMsg;
+  try{
+    if(apiKey&&apiKey.length>10&&!apiKey.startsWith('•')){
+      const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+apiKey,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:`Write a short ${selStyle} Bengali or English notification message (max 2 sentences, no preamble) for this reminder: "${txt}". Make it witty, memorable, and action-inspiring.`}]}]})
+      });
+      const d=await r.json();
+      aiMsg=d.candidates?.[0]?.content?.parts?.[0]?.text||getMsg(txt,selStyle);
+    } else {
+      await new Promise(res=>setTimeout(res,1800));
+      aiMsg=getMsg(txt,selStyle);
+    }
+  }catch(e){aiMsg=getMsg(txt,selStyle)}
+
+  clearInterval(tick);
+  document.getElementById('aiMod').classList.remove('show');
+  document.getElementById('mainOrb').classList.remove('proc');
+  document.getElementById('orbSt').textContent='● IDLE — READY';
+  btn.disabled=false;
+
+  const {ic,cl}=getIcon(txt);
+  const dateLabel=date===new Date().toISOString().split('T')[0]?'আজ':date;
+  const n={id:Date.now(),ic,cl,title:getTitle(txt),msg:aiMsg,time,date:dateLabel,rawDate:date,status:'pending',style:selStyle};
+  notifs.unshift(n);save();
+  scheduleNotif(n);
+  renderNotifs();
+  document.getElementById('rtxt').value='';
+  setDefaultDT();
+  nav('home');
+  setTimeout(()=>toast('✦ Smart notification scheduled!'),200);
+}
+
+// ===== RENDER =====
+function renderNotifs(){
+  const pending=notifs.filter(n=>n.status==='pending').length;
+  const ai=notifs.length;
+  const fired=notifs.filter(n=>n.status==='fired').length;
+  document.getElementById('st1').textContent=notifs.length;
+  document.getElementById('st2').textContent=ai;
+  document.getElementById('st3').textContent=fired;
+
+  const list=document.getElementById('nlist');
+  const empty=document.getElementById('nempty');
+  if(!notifs.length){list.innerHTML='';empty.style.display='flex';return}
+  empty.style.display='none';
+  list.innerHTML=notifs.map(n=>`
+    <div class="ncard" id="nc${n.id}">
+      <div class="nico ${n.cl}">${n.ic}</div>
+      <div class="ncon">
+        <div class="ntit">${n.title}</div>
+        <div class="nmsg">${n.msg}</div>
+        <div class="nmeta">
+          <div class="ntm">${n.date} · ${n.time}</div>
+          <div class="nbadge bai">✦ AI</div>
+          ${n.status==='fired'?'<div class="nbadge bfired">✓ SENT</div>':'<div class="nbadge bpend">⏳ PENDING</div>'}
+        </div>
+      </div>
+      <div class="ndel" onclick="delNotif(${n.id})">✕</div>
+    </div>
+  `).join('');
+}
+
+function delNotif(id){
+  const el=document.getElementById('nc'+id);
+  if(el){el.style.transform='translateX(60px)';el.style.opacity='0';el.style.transition='all 0.28s';
+    setTimeout(()=>{
+      if(timers[id]){clearTimeout(timers[id]);delete timers[id]}
+      notifs=notifs.filter(n=>n.id!==id);save();renderNotifs();
+    },280)}
+}
+
+// ===== NAV =====
+function nav(s){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.dbtn').forEach(x=>x.classList.remove('on'));
+  document.getElementById('s-'+s).classList.add('active');
+  document.getElementById('d-'+s).classList.add('on');
+  if(s==='create'){setDefaultDT();checkApiKey()}
+}
+
+function setDefaultDT(){
+  const n=new Date();n.setHours(n.getHours()+1,0,0,0);
+  document.getElementById('rdate').value=n.toISOString().split('T')[0];
+  document.getElementById('rtime').value=n.toTimeString().slice(0,5);
+}
+
+function pickStyle(el){
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');selStyle=el.dataset.s;
+}
+
+// ===== ORB CLICK =====
+function orbClick(){
+  const o=document.getElementById('mainOrb');
+  o.classList.add('proc');
+  document.getElementById('orbSt').textContent='● SYNCING...';
+  setTimeout(()=>{o.classList.remove('proc');document.getElementById('orbSt').textContent='● IDLE — READY'},1800);
+}
+
+// ===== TOAST =====
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ===== PWA INSTALL =====
+function setupPWA(){
+  window.addEventListener('beforeinstallprompt',e=>{
+    e.preventDefault();deferredPrompt=e;
+    document.getElementById('installBanner').classList.add('show');
+  });
+  // iOS hint
+  const isIOS=/iphone|ipad|ipod/.test(navigator.userAgent.toLowerCase());
+  if(isIOS&&!window.navigator.standalone){
+    document.getElementById('installBanner').classList.add('show');
+    document.getElementById('installBtn').textContent='iOS: Share → Add to Home';
+    document.getElementById('installBtn').onclick=()=>toast('Safari → Share বাটন → Add to Home Screen চাপুন');
+  }
+}
+
+async function installPWA(){
+  if(!deferredPrompt){toast('Browser-এর menu থেকে "Add to Home Screen" বেছে নিন');return}
+  deferredPrompt.prompt();
+  const{outcome}=await deferredPrompt.userChoice;
+  if(outcome==='accepted')toast('✅ SABBIR AURA ইনস্টল হচ্ছে!');
+  deferredPrompt=null;
+  document.getElementById('installBanner').classList.remove('show');
+}
+
+// ===== INIT =====
+setDefaultDT();
+checkPermission();
+checkApiKey();
+scheduleAll();
+renderNotifs();
+
+// Page visibility — reschedule on return
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)scheduleAll()});
+</script>
+</body>
+</html>
